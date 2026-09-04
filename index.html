@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUB dei Ricordi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #14110f;
+            color: #d4c4a8;
+            font-family: 'Playfair Display', serif;
+            margin: 0;
+            min-height: 100vh;
+            padding: 50px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- CONTENITORI DELLE VISTE --- */
+        .view-container {
+            position: absolute;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        .active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        /* --- MENU HUB VERTICALE --- */
+        .hub-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .memory-btn {
+            background: linear-gradient(145deg, #2a241f, #1a1613);
+            border: 1px solid #4a3b2c;
+            border-radius: 50px;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .memory-btn:hover {
+            transform: scale(1.15) translateX(10px);
+            box-shadow: 0 10px 25px rgba(212, 196, 168, 0.15);
+            border-color: #8c7355;
+            z-index: 5;
+        }
+
+        /* L'oggetto (Icona o Emoji) */
+        .object-icon {
+            font-size: 40px;
+            margin-right: 0;
+            transition: margin 0.4s ease;
+        }
+
+        /* Il nome del personaggio (Nascosto di default) */
+        .char-name {
+            font-size: 22px;
+            color: #d4c4a8;
+            max-width: 0;
+            opacity: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: max-width 0.5s ease, opacity 0.4s ease, margin 0.4s ease;
+        }
+
+        .memory-btn:hover .object-icon { margin-right: 20px; }
+        .memory-btn:hover .char-name { max-width: 300px; opacity: 1; }
+
+        /* --- STILE DEI RACCONTI --- */
+        .story-content {
+            background: rgba(30, 25, 22, 0.8);
+            border: 1px solid #4a3b2c;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            text-align: justify;
+            line-height: 1.8;
+            height: auto:
+        }
+
+        .back-btn {
+            margin-top: 30px;
+            background: transparent;
+            color: #8c7355;
+            border: 1px solid #8c7355;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background: #8c7355; color: #14110f; }
+
+        h2 { color: #fff; text-align: center; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- VISTA 1: L'HUB CENTRALE -->
+    <div id="hub-view" class="view-container active">
+        <h2 style="margin-bottom: 50px; font-weight: normal; letter-spacing: 2px;">I Frammenti del Passato</h2>
+        
+        <div class="hub-menu">
+            <!-- Pulsante 1 -->
+            <div class="memory-btn" onclick="openStory('story-1')">
+                <span class="object-icon">🗝️</span>
+                <span class="char-name">Ricordo di Alaric</span>
+            </div>
+
+            <!-- Pulsante 2 -->
+            <div class="memory-btn" onclick="openStory('story-2')">
+                <span class="object-icon">📜</span>
+                <span class="char-name">L'incontro con Elara</span>
+            </div>
+
+            <!-- Pulsante 3 -->
+            <div class="memory-btn" onclick="openStory('story-3')">
+                <span class="object-icon">🦅</span>
+                <span class="char-name">Il patto di Silas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA 2: I RACCONTI -->
+    <div id="story-view" class="view-container hidden">
+        <div class="story-content">
+            <h2 id="current-story-title">Titolo</h2>
+            <div id="current-story-text">
+                <!-- Il testo verrà iniettato qui da JavaScript -->
+            </div>
+        </div>
+        <button class="back-btn" onclick="closeStory()">Torna all'HUB</button>
+    </div>
+
+    <script>
+        // Il nostro database dei ricordi
+        const stories = {
+            'story-1': {
+                title: "La Chiave di Alaric",
+                text: "<p>La stanza era avvolta nel buio quando Alaric mi consegnò la chiave. 'Non perderla', sussurrò, con la voce rotta da una tensione che non gli apparteneva. Sentivo il metallo freddo contro il palmo della mano, un peso ben maggiore di quello fisico.</p><p>Qui puoi incollare tutto il testo della tua prima giocata...</p>"
+            },
+            'story-2': {
+                title: "La Pergamena di Elara",
+                text: "<p>L'odore di inchiostro fresco riempiva l'aria. Elara non alzò nemmeno lo sguardo dal tavolo mentre spingeva il documento verso di me. 'Firma,' disse secca. Ma c'era un dettaglio in fondo alla pagina che mi fece gelare il sangue...</p>"
+            },
+            'story-3': {
+                title: "Il Patto di Silas",
+                text: "<p>Il battito d'ali fu l'unico preavviso. Silas emerse dall'ombra, accarezzando le piume del suo rapace. Non avevamo mai avuto bisogno di molte parole, e quella notte non fece eccezione. L'accordo fu sigillato nel silenzio.</p>"
+            }
+        };
+
+        const hubView = document.getElementById('hub-view');
+        const storyView = document.getElementById('story-view');
+        const storyTitle = document.getElementById('current-story-title');
+        const storyText = document.getElementById('current-story-text');
+
+        // Funzione per aprire il racconto
+        function openStory(storyId) {
+            // Carica i testi giusti
+            storyTitle.innerHTML = stories[storyId].title;
+            storyText.innerHTML = stories[storyId].text;
+
+            // Animazione di scambio
+            hubView.classList.remove('active');
+            hubView.classList.add('hidden');
+            
+            setTimeout(() => {
+                storyView.classList.remove('hidden');
+                storyView.classList.add('active');
+            }, 400); // Attende 400ms che l'hub svanisca prima di mostrare il racconto
+        }
+
+        // Funzione per tornare all'HUB
+        function closeStory() {
+            storyView.classList.remove('active');
+            storyView.classList.add('hidden');
+            
+            setTimeout(() => {
+                hubView.classList.remove('hidden');
+                hubView.classList.add('active');
+            }, 400);
+        }
+    </script>
+</body>
+</html>
