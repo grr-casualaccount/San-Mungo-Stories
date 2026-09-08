@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivi del San Mungo - Reparto Ricordi</title>
+    <title>Archivi del San Mungo - Reparto Ricordi (PDF)</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
         /* --- PALETTE E SFONDO GLOBALE --- */
@@ -13,7 +13,7 @@
             font-family: 'Playfair Display', serif;
             margin: 0;
             height: 100vh;
-            overflow: hidden; /* Blocca qualsiasi scorrimento sgradito della pagina */
+            overflow: hidden; 
         }
 
         /* --- TITOLO PRINCIPALE --- */
@@ -40,7 +40,6 @@
             transition: filter 1s ease;
         }
 
-        /* Il palcoscenico dove scorrono le porte */
         .carousel-stage {
             position: relative;
             width: 100%;
@@ -51,7 +50,6 @@
             perspective: 1200px;
         }
 
-        /* Frecce Navigazione */
         .nav-btn {
             background: transparent;
             color: #a2db96;
@@ -76,7 +74,6 @@
             width: 260px;
             height: 400px;
             transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-            /* Il posizionamento verrà gestito dal Javascript per farle scorrere */
         }
 
         .card-door-container {
@@ -84,6 +81,7 @@
             display: flex;
             cursor: pointer;
             transition: transform 0.4s ease;
+            position: relative;
         }
         
         .door-scene.active-door .card-door-container:hover {
@@ -103,7 +101,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
             overflow: hidden;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
@@ -122,27 +119,44 @@
             clip-path: polygon(0% 0%, 75% 0%, 100% 10%, 100% 90%, 75% 100%, 0% 100%);
         }
 
-        /* Contenuti dipinti sul vetro */
-        .door-content {
+        /* --- CONTENUTI SULLA PORTA --- */
+        .door-icon-wrapper {
             position: absolute;
             width: 260px; 
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            justify-content: center;
+            top: 40%; 
+            transform: translateY(-50%);
             pointer-events: none;
         }
-        .door.left .door-content { left: 0; }
-        .door.right .door-content { right: 0; }
+        .door.left .door-icon-wrapper { left: 0; }
+        .door.right .door-icon-wrapper { right: 0; }
 
-        .object-icon { font-size: 60px; filter: drop-shadow(0 0 10px rgba(162, 219, 150, 0.5)); }
-        .char-name { font-size: 24px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase; }
+        .object-icon { font-size: 70px; filter: drop-shadow(0 0 10px rgba(162, 219, 150, 0.5)); }
+
+        .door-name-plate {
+            position: absolute;
+            bottom: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(18, 30, 27, 0.9);
+            border: 1px solid rgba(162, 219, 150, 0.5);
+            padding: 10px 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            z-index: 10; 
+            pointer-events: none; 
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            white-space: nowrap; 
+        }
+        
+        .char-name { font-size: 20px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #a2db96; }
 
         /* --- EFFETTO APERTURA PORTA --- */
         .door-scene.doors-open .door.left { transform: rotateY(-110deg); }
         .door-scene.doors-open .door.right { transform: rotateY(110deg); }
+        .door-scene.doors-open .door-name-plate { opacity: 0; transform: translate(-50%, 20px) scale(0.8); }
 
-        /* Luce magica che inonda lo schermo (Overlay ponte tra Hub e Storia) */
         .magic-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -154,7 +168,7 @@
             transition: opacity 1s ease;
         }
 
-        /* --- VISTA DELLA STORIA (REFERTO CLINICO) --- */
+        /* --- VISTA DELLA STORIA (PDF) --- */
         #story-view {
             position: fixed;
             top: 0; left: 0;
@@ -166,29 +180,42 @@
             opacity: 0;
             pointer-events: none;
             z-index: 40;
-            transition: opacity 1s ease; /* Transizione morbidissima senza scatti */
+            transition: opacity 1s ease; 
         }
 
         .story-content {
             background: rgba(18, 30, 27, 0.6);
-            backdrop-filter: blur(25px); /* Vetro molto spesso per coprire l'hub sotto */
+            backdrop-filter: blur(25px); 
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(162, 219, 150, 0.2);
-            padding: 50px;
+            padding: 30px;
             border-radius: 15px;
-            text-align: justify;
-            line-height: 1.8;
-            height: 60vh;
-            overflow-y: auto;
-            max-width: 800px;
+            /* Layout flessibile per massimizzare lo spazio del PDF */
+            display: flex;
+            flex-direction: column;
+            width: 85vw; /* Più largo per accogliere bene un formato A4 */
+            max-width: 1000px;
+            height: 75vh; /* Più alto */
             box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.4);
         }
 
-        .story-content::-webkit-scrollbar { width: 6px; }
-        .story-content::-webkit-scrollbar-thumb { background: #a2db96; border-radius: 4px; }
+        /* Il riquadro che conterrà il PDF */
+        #iframe-container {
+            flex-grow: 1; /* Prende tutto lo spazio rimasto sotto il titolo */
+            width: 100%;
+            background-color: #fff; /* Sfondo bianco dietro al PDF per evitare glitch trasparenti */
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .story-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
         .back-btn {
-            margin-top: 30px;
+            margin-top: 20px;
             background: transparent;
             color: #a2db96;
             border: 1px solid #a2db96;
@@ -214,75 +241,79 @@
         <button class="nav-btn" id="btn-next" onclick="moveCarousel(1)">❯</button>
 
         <div class="carousel-stage" id="doors-container">
-            <!-- LE PORTE VERRANNO GENERATE AUTOMATICAMENTE DAL JAVASCRIPT QUI -->
+            <!-- LE PORTE VERRANNO GENERATE AUTOMATICAMENTE -->
         </div>
     </div>
 
-    <!-- OVERLAY DI LUCE (Evita lo scatto) -->
+    <!-- OVERLAY DI LUCE -->
     <div class="magic-overlay" id="overlay"></div>
 
-    <!-- VISTA 2: IL RACCONTO -->
+    <!-- VISTA 2: IL RACCONTO (PDF iFrame) -->
     <div id="story-view">
         <div class="story-content">
-            <h2 id="current-story-title" class="magical-title" style="font-size: 30px; margin-bottom: 25px; margin-top: 0; color: #a2db96;">Titolo</h2>
-            <div id="current-story-text">
-                <!-- Il testo verrà iniettato qui -->
+            <h2 id="current-story-title" class="magical-title" style="font-size: 30px; margin-bottom: 20px; margin-top: 0; color: #a2db96; flex-shrink: 0;">Titolo</h2>
+            
+            <div id="iframe-container">
+                <!-- Qui dentro verrà caricato il PDF -->
+                <iframe id="pdf-viewer" class="story-iframe" src=""></iframe>
             </div>
+
         </div>
         <button class="back-btn" onclick="closeStory()">Torna alle storie</button>
     </div>
 
     <script>
-        // --- IL TUO DATABASE DEI RICORDI ---
-        // Aggiungi o modifica le storie qui. Il codice farà il resto in automatico.
+        // --- IL TUO DATABASE DEI RICORDI (Versione PDF) ---
+        // Al posto del testo lunghissimo, ora inserisci solo il NOME DEL FILE PDF
         const stories = [
             { 
                 icon: "🎩", 
                 name: "I. Albus", 
-                title: "Giorno 1 - Ore 16.30 circa", 
-                text: "<p>Albus era tornato. Dopo gli eventi del cimitero, aveva trovato Theodor Holloway ferito e ormai allo stremo delle forze. Non aveva esitato: si era avvicinato a lui e lo aveva coperto, impedendo che rimanesse esposto e vulnerabile ancora a lungo. Ma a curarlo era stata soprattutto Mary: Albus aveva fatto ciò che poteva per aiutarla, seguendo le sue indicazioni e cercando di mantenere Theodor stabile. Era stata Mary, tuttavia, ad occuparsi delle ferite più gravi in maniera meticolosa e ciò aveva permesso di tenere in vita l’Auror Senior colpito. </p>" 
+                title: "Il Fedora di Albus", 
+                pdfFile: "role_albus.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
             },
             { 
                 icon: "🎀", 
-                name: "II.  Nina", 
-                title: "Giorno 2 - Ore 02.45 circa", 
-                text: "<p>Role Nina</p>" 
+                name: "II. Nina", 
+                title: "Il Fiocco di Nina", 
+                pdfFile: "nina.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
             },
             { 
                 icon: "🧠", 
-                name: "III.  Henrich", 
-                title: "Giorno 2 - Ore 14.45 circa", 
-                text: "<p>Role Camus</p>" 
+                name: "III. Henrich", 
+                title: "La Mente di Henrich", 
+                pdfFile: "henrich.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
             },
             { 
                 icon: "🛡️", 
-                name: "IV.  Theodor", 
-                title: "Giorno 3 - ore 00.00 circa", 
-                text: "<p>Role theodor</p>" 
+                name: "IV. Theodor", 
+                title: "Il Dovere di Theodor", 
+                pdfFile: "theodor.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
             }
         ];
 
         let currentIndex = 0;
-        let isAnimating = false; // Impedisce i doppi click veloci
+        let isAnimating = false; 
         const container = document.getElementById('doors-container');
 
-        // 1. GENERAZIONE AUTOMATICA DELLE PORTE
+        // Generazione delle porte
         function buildDoors() {
             stories.forEach((story, index) => {
                 const doorHTML = `
                     <div class="door-scene" id="door-${index}">
                         <div class="card-door-container" onclick="openStory(${index})">
                             <div class="door left">
-                                <div class="door-content">
+                                <div class="door-icon-wrapper">
                                     <span class="object-icon">${story.icon}</span>
-                                    <span class="char-name">${story.name}</span>
                                 </div>
                             </div>
                             <div class="door right">
-                                <div class="door-content">
+                                <div class="door-icon-wrapper">
                                     <span class="object-icon">${story.icon}</span>
-                                    <span class="char-name">${story.name}</span>
                                 </div>
+                            </div>
+                            <div class="door-name-plate">
+                                <span class="char-name">${story.name}</span>
                             </div>
                         </div>
                     </div>
@@ -292,41 +323,35 @@
             updateCarouselPositions();
         }
 
-        // 2. POSIZIONAMENTO 3D DELLE PORTE (Lo scorrimento visivo)
+        // Calcolo posizioni Carosello
         function updateCarouselPositions() {
             const doors = document.querySelectorAll('.door-scene');
             
             doors.forEach((door, index) => {
-                // Calcoliamo la distanza della porta da quella centrale
                 let diff = index - currentIndex;
                 
-                // Gestione del carosello circolare (da ultima a prima e viceversa)
                 if (diff < -1 && currentIndex === stories.length - 1 && index === 0) diff = 1;
                 if (diff > 1 && currentIndex === 0 && index === stories.length - 1) diff = -1;
 
                 if (diff === 0) {
-                    // Porta Centrale Attiva
                     door.style.transform = 'translateX(0) scale(1)';
                     door.style.opacity = '1';
                     door.style.zIndex = '5';
-                    door.style.pointerEvents = 'auto'; // Cliccabile
+                    door.style.pointerEvents = 'auto'; 
                     door.classList.add('active-door');
                 } else if (diff === -1) {
-                    // Porta a Sinistra
                     door.style.transform = 'translateX(-320px) scale(0.8)';
                     door.style.opacity = '0.4';
                     door.style.zIndex = '3';
-                    door.style.pointerEvents = 'none'; // Non cliccabile
+                    door.style.pointerEvents = 'none'; 
                     door.classList.remove('active-door');
                 } else if (diff === 1) {
-                    // Porta a Destra
                     door.style.transform = 'translateX(320px) scale(0.8)';
                     door.style.opacity = '0.4';
                     door.style.zIndex = '3';
-                    door.style.pointerEvents = 'none'; // Non cliccabile
+                    door.style.pointerEvents = 'none'; 
                     door.classList.remove('active-door');
                 } else {
-                    // Porte nascoste agli estremi
                     door.style.transform = `translateX(${diff > 0 ? '600px' : '-600px'}) scale(0.5)`;
                     door.style.opacity = '0';
                     door.style.zIndex = '1';
@@ -336,67 +361,61 @@
             });
         }
 
-        // 3. FRECCE DI NAVIGAZIONE
         function moveCarousel(direction) {
             if (isAnimating) return;
-            // Calcola il nuovo indice facendo il giro completo
             currentIndex = (currentIndex + direction + stories.length) % stories.length;
             updateCarouselPositions();
         }
 
-        // 4. APERTURA DELLA PORTA E DISSOLVENZA (Addio Scatto!)
+        // Apertura Porta e Caricamento PDF
         function openStory(index) {
             if (isAnimating) return;
             isAnimating = true;
 
-            // Spalanca la porta selezionata
             const activeDoor = document.getElementById(`door-${index}`);
             activeDoor.classList.add('doors-open');
 
-            // Avvia la dissolvenza incrociata dopo che la porta ha iniziato ad aprirsi
             setTimeout(() => {
-                // Accende la luce di sfondo
                 document.getElementById('overlay').style.opacity = '1';
                 
-                // Inietta il testo
+                // Aggiorna il titolo
                 document.getElementById('current-story-title').innerHTML = stories[index].title;
-                document.getElementById('current-story-text').innerHTML = stories[index].text;
                 
-                // Fa apparire il racconto morbidamente
+                // CARICA IL PDF CORRETTO NELL'IFRAME
+                document.getElementById('pdf-viewer').src = stories[index].pdfFile;
+                
                 const storyView = document.getElementById('story-view');
                 storyView.style.opacity = '1';
                 storyView.style.pointerEvents = 'auto';
                 
-                // Blocca le interazioni con l'HUB sotto
                 document.getElementById('hub-view').style.pointerEvents = 'none';
                 
                 isAnimating = false;
-            }, 500); // 500ms sincronizzati con l'apertura delle porte
+            }, 500); 
         }
 
-        // 5. CHIUSURA DELLA PORTA E RITORNO
+        // Chiusura Porta
         function closeStory() {
             if (isAnimating) return;
             isAnimating = true;
 
-            // Svanisce il testo e la luce
             const storyView = document.getElementById('story-view');
             storyView.style.opacity = '0';
             storyView.style.pointerEvents = 'none';
             document.getElementById('overlay').style.opacity = '0';
 
-            // Quando la nebbia si dirada, vediamo la porta chiudersi
             setTimeout(() => {
                 const activeDoor = document.getElementById(`door-${currentIndex}`);
                 activeDoor.classList.remove('doors-open');
                 
-                // Riattiva l'HUB
+                // Svuota l'iframe per evitare problemi di memoria
+                document.getElementById('pdf-viewer').src = "";
+
                 document.getElementById('hub-view').style.pointerEvents = 'auto';
                 isAnimating = false;
-            }, 800); // Sincronizzato con il tempo di scomparsa della storia
+            }, 800); 
         }
 
-        // Inizializza tutto all'avvio della pagina
         buildDoors();
     </script>
 </body>
