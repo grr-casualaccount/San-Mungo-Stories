@@ -8,9 +8,8 @@
     <style>
         /* --- PALETTE SAN MUNGO --- */
         body {
-            /* Sfondo asettico magico: verde petrolio molto scuro verso il nero */
             background: radial-gradient(circle at center, #1b2a26 0%, #09100e 100%);
-            color: #e0f2eb; /* Bianco menta per il testo */
+            color: #e0f2eb;
             font-family: 'Playfair Display', serif;
             margin: 0;
             min-height: 100vh;
@@ -18,103 +17,147 @@
             justify-content: center;
             align-items: center;
             padding: 40px 0;
+            overflow: hidden; /* Evitiamo scroll indesiderati durante l'animazione delle porte */
         }
 
         .view-container {
             position: absolute;
             width: 100%;
-            max-width: 800px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: opacity 0.8s ease, transform 0.8s ease;
+            transition: opacity 0.6s ease;
         }
 
-        .hidden { opacity: 0; pointer-events: none; transform: scale(0.95); z-index: -1; }
-        .active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
+        .hidden { opacity: 0; pointer-events: none; z-index: -1; }
+        .active { opacity: 1; pointer-events: auto; z-index: 10; }
 
-        /* --- TITOLO EFFETTO POZIONE CURATIVA --- */
+        /* --- TITOLO --- */
         .magical-title {
             font-family: 'Cinzel', serif;
             font-size: 35px;
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             letter-spacing: 4px;
-            color: transparent;
-            animation: healingReveal 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            color: #e0f2eb;
+            text-shadow: 0 0 12px rgba(162, 219, 150, 0.4);
         }
 
-        @keyframes healingReveal {
-            0% { opacity: 0; filter: blur(15px); transform: translateY(-20px); text-shadow: 0 0 0 rgba(162, 219, 150, 0); }
-            50% { color: transparent; text-shadow: 0 0 25px rgba(162, 219, 150, 1); } /* Bagliore verde lime/curativo */
-            100% { opacity: 1; filter: blur(0); transform: translateY(0); color: #e0f2eb; text-shadow: 0 0 12px rgba(162, 219, 150, 0.4); }
-        }
-
-        /* --- MENU VERTICALE SAN MUNGO --- */
-        .hub-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            width: 100%;
-            max-width: 450px; /* Larghezza controllata per l'impaginazione verticale */
-        }
-
-        /* --- TARGHE IN VETRO OTTAGONALI --- */
-        .memory-card {
-            width: 100%;
-            height: 90px;
+        /* --- NAVIGAZIONE A BOTTONE SINGOLO --- */
+        .carousel-single {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            padding-left: 30px;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: #a2db96;
+            border: none;
+            font-size: 50px;
             cursor: pointer;
-            
-            /* Effetto Vetro a tema ospedale magico */
-            background: rgba(162, 219, 150, 0.05); /* Verde lime trasparentissimo */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(162, 219, 150, 0.3);
-            border-bottom: 1px solid rgba(162, 219, 150, 0.1);
-            
-            /* Forma a Ottagono Allungato */
-            clip-path: polygon(5% 0%, 95% 0%, 100% 25%, 100% 75%, 95% 100%, 5% 100%, 0% 75%, 0% 25%);
-            
-            /* Animazione d'ingresso a cascata */
-            opacity: 0;
-            animation: emergeMemory 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .memory-card:nth-child(1) { animation-delay: 1.0s; }
-        .memory-card:nth-child(2) { animation-delay: 1.3s; }
-        .memory-card:nth-child(3) { animation-delay: 1.6s; }
-        .memory-card:nth-child(4) { animation-delay: 1.9s; }
-
-        @keyframes emergeMemory {
-            0% { opacity: 0; transform: translateY(30px) scale(0.95); filter: blur(5px); }
-            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-        }
-
-        .memory-card:hover {
-            background: rgba(162, 219, 150, 0.15);
-            transform: scale(1.05) translateX(10px); /* Si allarga e si sposta un po' a destra */
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border-left: 3px solid #a2db96; /* Dettaglio verde luminoso al passaggio */
-        }
-
-        .object-icon { 
-            font-size: 32px; 
-            margin-right: 25px;
-            filter: drop-shadow(0 0 5px rgba(162, 219, 150, 0.5)); /* Leggero alone curativo sull'icona */
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px rgba(162, 219, 150, 0.3);
+            padding: 20px;
         }
         
-        .char-name { 
-            font-size: 20px; 
-            font-weight: normal;
-            letter-spacing: 1px; 
+        .nav-btn:hover { 
+            transform: scale(1.2); 
+            text-shadow: 0 0 20px rgba(162, 219, 150, 0.8); 
         }
 
-        /* --- STILE DEI RACCONTI / CARTELLE CLINICHE --- */
+        /* --- IL BOTTONE / LE PORTE --- */
+        .door-scene {
+            perspective: 1200px; /* Crea la profondità 3D per l'apertura delle porte */
+            width: 260px;
+            height: 400px;
+            position: relative;
+        }
+
+        /* Bagliore magico dietro le porte */
+        .door-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px; height: 100px;
+            background: #a2db96;
+            border-radius: 50%;
+            filter: blur(50px);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .card-door-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .card-door-container:hover {
+            transform: scale(1.05);
+        }
+
+        /* Le due metà della porta */
+        .door {
+            width: 50%;
+            height: 100%;
+            background: rgba(162, 219, 150, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(162, 219, 150, 0.4);
+            border-bottom: 1px solid rgba(162, 219, 150, 0.1);
+            position: relative;
+            transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Il taglio a ottagono diviso a metà */
+        .door.left {
+            transform-origin: left center;
+            border-left: 1px solid rgba(162, 219, 150, 0.4);
+            border-right: 1px solid rgba(0,0,0,0.5); /* La fessura centrale */
+            clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 90%, 0% 10%);
+        }
+
+        .door.right {
+            transform-origin: right center;
+            border-right: 1px solid rgba(162, 219, 150, 0.4);
+            border-left: 1px solid rgba(162, 219, 150, 0.2); /* Riflesso sulla fessura */
+            clip-path: polygon(0% 0%, 75% 0%, 100% 10%, 100% 90%, 75% 100%, 0% 100%);
+        }
+
+        /* L'animazione di apertura! */
+        .doors-open .door.left { transform: rotateY(-105deg); }
+        .doors-open .door.right { transform: rotateY(105deg); }
+        .doors-open ~ .door-glow { opacity: 0.8; } /* Accende il bagliore dietro */
+
+        /* Contenuti dipinti sulle porte */
+        .door-content {
+            position: absolute;
+            width: 260px; /* Stessa larghezza del contenitore totale */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            pointer-events: none;
+        }
+
+        /* Allineiamo il contenuto in base a quale metà della porta è */
+        .door.left .door-content { left: 0; }
+        .door.right .door-content { right: 0; }
+
+        .object-icon { font-size: 60px; filter: drop-shadow(0 0 10px rgba(162, 219, 150, 0.5)); }
+        .char-name { font-size: 24px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* --- STILE DEI RACCONTI --- */
         .story-content {
             background: rgba(18, 30, 27, 0.8);
             backdrop-filter: blur(15px);
@@ -123,15 +166,20 @@
             border-radius: 15px;
             text-align: justify;
             line-height: 1.8;
-            height: auto;
+            height: 60vh;
+            overflow-y: auto;
             max-width: 800px;
             box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
 
+        /* Scrollbar interna per i racconti */
+        .story-content::-webkit-scrollbar { width: 6px; }
+        .story-content::-webkit-scrollbar-thumb { background: #a2db96; border-radius: 4px; }
+
         .back-btn {
             margin-top: 30px;
             background: transparent;
-            color: #a2db96; /* Verde lime */
+            color: #a2db96;
             border: 1px solid #a2db96;
             padding: 10px 25px;
             font-family: inherit;
@@ -150,32 +198,42 @@
 
     <!-- VISTA 1: L'HUB CENTRALE -->
     <div id="hub-view" class="view-container active">
-        <h2 class="magical-title">Archivi del San Mungo<br><span style="font-size: 22px; font-style: italic; font-weight: normal; color: #a2db96;">Reparto Ricordi e Terapie</span></h2>
+        <h2 class="magical-title">Archivi del San Mungo<br><span style="font-size: 22px; font-style: italic; font-weight: normal; color: #a2db96;">Reparto Ricordi</span></h2>
         
-        <div class="hub-menu">
-            <div class="memory-card" onclick="openStory('story-1')">
-                <span class="object-icon">🧪</span>
-                <span class="char-name">Pozione di Alaric</span>
-            </div>
+        <div class="carousel-single">
+            <button class="nav-btn" onclick="prevStory()">❮</button>
+            
+            <div class="door-scene">
+                <!-- Il bagliore nascosto dietro le porte -->
+                <div class="door-glow"></div>
+                
+                <!-- Il bottone a doppia porta -->
+                <div class="card-door-container" id="magic-door" onclick="openDoor()">
+                    
+                    <!-- Metà Sinistra -->
+                    <div class="door left">
+                        <div class="door-content">
+                            <span class="object-icon" id="icon-left">🎩</span>
+                            <span class="char-name" id="name-left">I. Albus</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Metà Destra -->
+                    <div class="door right">
+                        <div class="door-content">
+                            <span class="object-icon" id="icon-right">🎩</span>
+                            <span class="char-name" id="name-right">I. Albus</span>
+                        </div>
+                    </div>
 
-            <div class="memory-card" onclick="openStory('story-2')">
-                <span class="object-icon">⚕️</span>
-                <span class="char-name">Referto di Elara</span>
+                </div>
             </div>
-
-            <div class="memory-card" onclick="openStory('story-3')">
-                <span class="object-icon">🩺</span>
-                <span class="char-name">Consulto con Silas</span>
-            </div>
-
-            <div class="memory-card" onclick="openStory('story-4')">
-                <span class="object-icon">🛏️</span>
-                <span class="char-name">Letto 4 - Theodor</span>
-            </div>
+            
+            <button class="nav-btn" onclick="nextStory()">❯</button>
         </div>
     </div>
 
-    <!-- VISTA 2: I RACCONTI -->
+    <!-- VISTA 2: IL RACCONTO -->
     <div id="story-view" class="view-container hidden">
         <div class="story-content">
             <h2 id="current-story-title" class="magical-title" style="font-size: 28px; margin-bottom: 25px; color: #a2db96;">Titolo</h2>
@@ -183,44 +241,123 @@
                 <!-- Il testo verrà iniettato qui -->
             </div>
         </div>
-        <button class="back-btn" onclick="closeStory()">Chiudi Referto</button>
+        <button class="back-btn" onclick="closeDoor()">Torna alle storie</button>
     </div>
 
     <script>
-        const stories = {
-            'story-1': { title: "La Pozione di Alaric", text: "<p>L'odore asettico del reparto si mescolava a quello pungente della radice di asfodelo...</p>" },
-            'story-2': { title: "Il Referto di Elara", text: "<p>La Guaritrice Elara picchiettò la bacchetta sulla cartella clinica, che si auto-compilò all'istante...</p>" },
-            'story-3': { title: "Consulto con Silas", text: "<p>Silas camminava avanti e indietro lungo il corridoio verde lime, visibilmente agitato...</p>" },
-            'story-4': { title: "La Veglia di Theodor", text: "<p>Le luci magiche erano abbassate nel Reparto Lesioni da Incantesimo. Theodor riposava...</p>" }
-        };
+        // Database dei ricordi (Ordine specifico)
+        const stories = [
+            { 
+                icon: "🎩", 
+                name: "I. Albus", 
+                title: "Giorno 1 - Ore 16.30 circa.", 
+                text: "<p>Albus si sistemò il cappello con flemma, non curandosi dell'agitazione che permeava il corridoio del San Mungo. 'Tutto ha un suo tempo', mormorò.</p>" 
+            },
+            { 
+                icon: "🎀", 
+                name: "II. Nina", 
+                title: "Giorno 2 - Ore 02.35 circa", 
+                text: "<p>Il nastro rosso spiccava innaturalmente contro il bianco asettico delle lenzuola. Nina lo strinse tra le dita tremanti prima di parlare.</p>" 
+            },
+            { 
+                icon: "🧠", 
+                name: "III. Henrich", 
+                title: "Giorno 2 - Ore 14.25 circa", 
+                text: "<p>Nel reparto Danni da Incantesimo, Henrich fissava il vuoto. Capire i suoi pensieri era come decifrare un antico tomo di magia perduta.</p>" 
+            },
+            { 
+                icon: "🛡️", 
+                name: "IV. Theodor", 
+                title: "Giorno 3 - Ore 00.00 circa", 
+                text: "<p>Lo scudo era posato contro il comodino. Anche in un letto d'ospedale, Theodor sembrava pronto a schierarsi in battaglia per proteggerci.</p>" 
+            }
+        ];
 
+        let currentIndex = 0;
+
+        // Elementi del DOM
+        const magicDoor = document.getElementById('magic-door');
+        const iconLeft = document.getElementById('icon-left');
+        const iconRight = document.getElementById('icon-right');
+        const nameLeft = document.getElementById('name-left');
+        const nameRight = document.getElementById('name-right');
+        
         const hubView = document.getElementById('hub-view');
         const storyView = document.getElementById('story-view');
         const storyTitle = document.getElementById('current-story-title');
         const storyText = document.getElementById('current-story-text');
 
-        function openStory(storyId) {
-            storyTitle.innerHTML = stories[storyId].title;
-            storyText.innerHTML = stories[storyId].text;
-
-            hubView.classList.remove('active');
-            hubView.classList.add('hidden');
+        // Aggiorna l'aspetto della porta in base al ricordo selezionato
+        function updateDoorView() {
+            const current = stories[currentIndex];
             
-            setTimeout(() => {
-                storyView.classList.remove('hidden');
-                storyView.classList.add('active');
-            }, 500);
+            // Applichiamo i testi e le icone alle due metà
+            iconLeft.innerText = current.icon;
+            iconRight.innerText = current.icon;
+            nameLeft.innerText = current.name;
+            nameRight.innerText = current.name;
+            
+            // Prepariamo i contenuti della storia per quando si aprirà
+            storyTitle.innerHTML = current.title;
+            storyText.innerHTML = current.text;
         }
 
-        function closeStory() {
+        // Frecce di navigazione
+        function nextStory() {
+            // Un piccolo trucco per creare un effetto di dissolvenza rapida tra le porte
+            magicDoor.style.opacity = 0;
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % stories.length;
+                updateDoorView();
+                magicDoor.style.opacity = 1;
+            }, 200);
+        }
+
+        function prevStory() {
+            magicDoor.style.opacity = 0;
+            setTimeout(() => {
+                currentIndex = (currentIndex - 1 + stories.length) % stories.length;
+                updateDoorView();
+                magicDoor.style.opacity = 1;
+            }, 200);
+        }
+
+        // Apre le porte e mostra la storia
+        function openDoor() {
+            // 1. Facciamo spalancare le porte
+            magicDoor.classList.add('doors-open');
+            
+            // 2. Dopo mezzo secondo (il tempo che si aprano), dissolviamo l'HUB e mostriamo la storia
+            setTimeout(() => {
+                hubView.classList.remove('active');
+                hubView.classList.add('hidden');
+                
+                storyView.classList.remove('hidden');
+                storyView.classList.add('active');
+            }, 600);
+        }
+
+        // Chiude la storia e sigilla di nuovo le porte
+        function closeDoor() {
+            // 1. Nascondiamo la storia
             storyView.classList.remove('active');
             storyView.classList.add('hidden');
             
+            // 2. Mostriamo l'HUB con le porte ancora aperte
             setTimeout(() => {
                 hubView.classList.remove('hidden');
                 hubView.classList.add('active');
-            }, 500);
+                
+                // 3. Facciamo sbattere/chiudere le porte
+                setTimeout(() => {
+                    magicDoor.classList.remove('doors-open');
+                }, 100);
+                
+            }, 500); // Attende la fine della dissolvenza della storia
         }
+
+        // Inizializza la prima porta all'avvio
+        updateDoorView();
     </script>
 </body>
 </html>
