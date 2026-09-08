@@ -17,16 +17,17 @@
             justify-content: center;
             align-items: center;
             padding: 40px 0;
-            overflow: hidden; /* Evitiamo scroll indesiderati durante l'animazione delle porte */
+            overflow: hidden;
         }
 
+        /* Niente più "scale" che causava i salti visivi. Solo dissolvenza morbida. */
         .view-container {
             position: absolute;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: opacity 0.6s ease;
+            transition: opacity 1s ease;
         }
 
         .hidden { opacity: 0; pointer-events: none; z-index: -1; }
@@ -60,6 +61,7 @@
             transition: all 0.3s ease;
             text-shadow: 0 0 10px rgba(162, 219, 150, 0.3);
             padding: 20px;
+            outline: none;
         }
         
         .nav-btn:hover { 
@@ -69,23 +71,23 @@
 
         /* --- IL BOTTONE / LE PORTE --- */
         .door-scene {
-            perspective: 1200px; /* Crea la profondità 3D per l'apertura delle porte */
+            perspective: 1200px; 
             width: 260px;
             height: 400px;
             position: relative;
         }
 
-        /* Bagliore magico dietro le porte */
+        /* Il bagliore magico che si espande */
         .door-glow {
             position: absolute;
             top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px; height: 100px;
-            background: #a2db96;
+            transform: translate(-50%, -50%) scale(1);
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, #a2db96 0%, transparent 70%);
             border-radius: 50%;
-            filter: blur(50px);
             opacity: 0;
-            transition: opacity 0.5s ease;
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
         .card-door-container {
@@ -93,14 +95,14 @@
             height: 100%;
             display: flex;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: transform 0.4s ease;
         }
 
         .card-door-container:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
+            box-shadow: 0 0 30px rgba(162, 219, 150, 0.2);
         }
 
-        /* Le due metà della porta */
         .door {
             width: 50%;
             height: 100%;
@@ -110,7 +112,7 @@
             border-top: 1px solid rgba(162, 219, 150, 0.4);
             border-bottom: 1px solid rgba(162, 219, 150, 0.1);
             position: relative;
-            transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -119,38 +121,48 @@
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
 
-        /* Il taglio a ottagono diviso a metà */
         .door.left {
             transform-origin: left center;
             border-left: 1px solid rgba(162, 219, 150, 0.4);
-            border-right: 1px solid rgba(0,0,0,0.5); /* La fessura centrale */
+            border-right: 1px solid rgba(0,0,0,0.5); 
             clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 90%, 0% 10%);
         }
 
         .door.right {
             transform-origin: right center;
             border-right: 1px solid rgba(162, 219, 150, 0.4);
-            border-left: 1px solid rgba(162, 219, 150, 0.2); /* Riflesso sulla fessura */
+            border-left: 1px solid rgba(162, 219, 150, 0.2); 
             clip-path: polygon(0% 0%, 75% 0%, 100% 10%, 100% 90%, 75% 100%, 0% 100%);
         }
 
-        /* L'animazione di apertura! */
-        .doors-open .door.left { transform: rotateY(-105deg); }
-        .doors-open .door.right { transform: rotateY(105deg); }
-        .doors-open ~ .door-glow { opacity: 0.8; } /* Accende il bagliore dietro */
+        /* Animazione Apertura: le porte si aprono e la luce INONDA lo schermo */
+        .doors-open .door.left { transform: rotateY(-110deg); }
+        .doors-open .door.right { transform: rotateY(110deg); }
+        .doors-open ~ .door-glow { 
+            opacity: 1; 
+            transform: translate(-50%, -50%) scale(10); 
+            transition: opacity 0.8s ease, transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
 
-        /* Contenuti dipinti sulle porte */
+        /* Contenuti interni con animazione di dissolvenza indipendente */
         .door-content {
             position: absolute;
-            width: 260px; /* Stessa larghezza del contenitore totale */
+            width: 260px; 
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
             pointer-events: none;
+            transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
         }
 
-        /* Allineiamo il contenuto in base a quale metà della porta è */
+        /* Classe per il cambio porta: sfuma e rimpicciolisce solo il testo/icona */
+        .content-fade {
+            opacity: 0;
+            filter: blur(8px);
+            transform: scale(0.9);
+        }
+
         .door.left .door-content { left: 0; }
         .door.right .door-content { right: 0; }
 
@@ -172,7 +184,6 @@
             box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
 
-        /* Scrollbar interna per i racconti */
         .story-content::-webkit-scrollbar { width: 6px; }
         .story-content::-webkit-scrollbar-thumb { background: #a2db96; border-radius: 4px; }
 
@@ -245,38 +256,39 @@
     </div>
 
     <script>
-        // Database dei ricordi (Ordine specifico)
         const stories = [
             { 
                 icon: "🎩", 
                 name: "I. Albus", 
-                title: "Giorno 1 - Ore 16.30 circa.", 
+                title: "Il Fedora di Albus", 
                 text: "<p>Albus si sistemò il cappello con flemma, non curandosi dell'agitazione che permeava il corridoio del San Mungo. 'Tutto ha un suo tempo', mormorò.</p>" 
             },
             { 
                 icon: "🎀", 
                 name: "II. Nina", 
-                title: "Giorno 2 - Ore 02.35 circa", 
+                title: "Il Fiocco di Nina", 
                 text: "<p>Il nastro rosso spiccava innaturalmente contro il bianco asettico delle lenzuola. Nina lo strinse tra le dita tremanti prima di parlare.</p>" 
             },
             { 
                 icon: "🧠", 
                 name: "III. Henrich", 
-                title: "Giorno 2 - Ore 14.25 circa", 
+                title: "La Mente di Henrich", 
                 text: "<p>Nel reparto Danni da Incantesimo, Henrich fissava il vuoto. Capire i suoi pensieri era come decifrare un antico tomo di magia perduta.</p>" 
             },
             { 
                 icon: "🛡️", 
                 name: "IV. Theodor", 
-                title: "Giorno 3 - Ore 00.00 circa", 
+                title: "Il Dovere di Theodor", 
                 text: "<p>Lo scudo era posato contro il comodino. Anche in un letto d'ospedale, Theodor sembrava pronto a schierarsi in battaglia per proteggerci.</p>" 
             }
         ];
 
         let currentIndex = 0;
+        let isAnimating = false; // Blocca i clic multipli mentre si aprono le porte
 
-        // Elementi del DOM
+        // Elementi
         const magicDoor = document.getElementById('magic-door');
+        const doorContents = document.querySelectorAll('.door-content'); // Entrambi i contenuti
         const iconLeft = document.getElementById('icon-left');
         const iconRight = document.getElementById('icon-right');
         const nameLeft = document.getElementById('name-left');
@@ -287,76 +299,81 @@
         const storyTitle = document.getElementById('current-story-title');
         const storyText = document.getElementById('current-story-text');
 
-        // Aggiorna l'aspetto della porta in base al ricordo selezionato
         function updateDoorView() {
             const current = stories[currentIndex];
-            
-            // Applichiamo i testi e le icone alle due metà
             iconLeft.innerText = current.icon;
             iconRight.innerText = current.icon;
             nameLeft.innerText = current.name;
             nameRight.innerText = current.name;
             
-            // Prepariamo i contenuti della storia per quando si aprirà
             storyTitle.innerHTML = current.title;
             storyText.innerHTML = current.text;
         }
 
-        // Frecce di navigazione
-        function nextStory() {
-            // Un piccolo trucco per creare un effetto di dissolvenza rapida tra le porte
-            magicDoor.style.opacity = 0;
+        // --- CAMBIO MEMORIA MORBIDO ---
+        function changeStoryFluidly(step) {
+            if (isAnimating) return;
+            
+            // 1. Sfuoca e nasconde solo l'icona e il testo (vetro fermo!)
+            doorContents.forEach(el => el.classList.add('content-fade'));
+            
             setTimeout(() => {
-                currentIndex = (currentIndex + 1) % stories.length;
+                // 2. Cambia i dati mentre è sfuocato
+                currentIndex = (currentIndex + step + stories.length) % stories.length;
                 updateDoorView();
-                magicDoor.style.opacity = 1;
-            }, 200);
+                
+                // 3. Fa riapparire il nuovo testo
+                doorContents.forEach(el => el.classList.remove('content-fade'));
+            }, 400); // Attende 400ms che finisca l'animazione di sparizione
         }
 
-        function prevStory() {
-            magicDoor.style.opacity = 0;
-            setTimeout(() => {
-                currentIndex = (currentIndex - 1 + stories.length) % stories.length;
-                updateDoorView();
-                magicDoor.style.opacity = 1;
-            }, 200);
-        }
+        function nextStory() { changeStoryFluidly(1); }
+        function prevStory() { changeStoryFluidly(-1); }
 
-        // Apre le porte e mostra la storia
+        // --- ENTRATA FLUIDA NEL RACCONTO ---
         function openDoor() {
-            // 1. Facciamo spalancare le porte
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // 1. Apre le porte e inonda lo schermo di luce curativa
             magicDoor.classList.add('doors-open');
             
-            // 2. Dopo mezzo secondo (il tempo che si aprano), dissolviamo l'HUB e mostriamo la storia
+            // 2. Mentre la luce si sta ancora espandendo, fa un crossfade morbidissimo
             setTimeout(() => {
                 hubView.classList.remove('active');
                 hubView.classList.add('hidden');
                 
                 storyView.classList.remove('hidden');
                 storyView.classList.add('active');
-            }, 600);
+                
+                isAnimating = false;
+            }, 800); // 800ms crea un incrocio perfetto con l'apertura delle porte
         }
 
-        // Chiude la storia e sigilla di nuovo le porte
+        // --- RITORNO FLUIDO ALL'HUB ---
         function closeDoor() {
-            // 1. Nascondiamo la storia
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // 1. Nasconde la storia
             storyView.classList.remove('active');
             storyView.classList.add('hidden');
             
-            // 2. Mostriamo l'HUB con le porte ancora aperte
+            // 2. Riporta l'HUB con la luce ancora accesa e le porte spalancate
             setTimeout(() => {
                 hubView.classList.remove('hidden');
                 hubView.classList.add('active');
                 
-                // 3. Facciamo sbattere/chiudere le porte
+                // 3. Mezzo secondo dopo aver visto la stanza, le porte sbattono chiudendosi
                 setTimeout(() => {
                     magicDoor.classList.remove('doors-open');
-                }, 100);
+                    isAnimating = false;
+                }, 400);
                 
-            }, 500); // Attende la fine della dissolvenza della storia
+            }, 800); // Sincronizzato con il fade-out della storia
         }
 
-        // Inizializza la prima porta all'avvio
+        // Inizializza
         updateDoorView();
     </script>
 </body>
