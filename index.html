@@ -181,8 +181,15 @@
             max-width: 100%;
             height: auto;
             border-radius: 4px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            background-color: white; /* Mantiene lo sfondo del PDF */
+            
+            /* 1. Inverte i colori e aggiunge un leggero riflesso verde menta al testo */
+            filter: invert(1) sepia(0.3) hue-rotate(110deg) brightness(1.2);
+            
+            /* 2. MAGIA: Rende lo sfondo nero (ex-bianco) completamente trasparente! */
+            mix-blend-mode: screen;
+            
+            /* 3. Ammorbidisce un po' l'inchiostro per fonderlo col vetro */
+            opacity: 0.9; 
         }
 
         #pdf-render-container::-webkit-scrollbar { width: 8px; }
