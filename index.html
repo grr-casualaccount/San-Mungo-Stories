@@ -3,8 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivi del San Mungo - Reparto Ricordi (PDF)</title>
+    <title>Archivi del San Mungo - Reparto Ricordi</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    
+    <!-- LIBRERIA MAGICA PER LEGGERE I PDF SENZA INTERFACCIA -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        // Configura il worker per il PDF
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+
     <style>
         /* --- PALETTE E SFONDO GLOBALE --- */
         body {
@@ -16,7 +24,6 @@
             overflow: hidden; 
         }
 
-        /* --- TITOLO PRINCIPALE --- */
         .magical-title {
             font-family: 'Cinzel', serif;
             font-size: 35px;
@@ -30,7 +37,7 @@
             z-index: 2;
         }
 
-        /* --- VISTA DELL'HUB (CAROSELLO PORTE) --- */
+        /* --- VISTA DELL'HUB --- */
         #hub-view {
             position: absolute;
             top: 0; left: 0;
@@ -105,21 +112,9 @@
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
 
-        .door.left {
-            transform-origin: left center;
-            border-left: 1px solid rgba(162, 219, 150, 0.4);
-            border-right: 1px solid rgba(0,0,0,0.5); 
-            clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 90%, 0% 10%);
-        }
+        .door.left { transform-origin: left center; border-left: 1px solid rgba(162, 219, 150, 0.4); border-right: 1px solid rgba(0,0,0,0.5); clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 90%, 0% 10%); }
+        .door.right { transform-origin: right center; border-right: 1px solid rgba(162, 219, 150, 0.4); border-left: 1px solid rgba(162, 219, 150, 0.2); clip-path: polygon(0% 0%, 75% 0%, 100% 10%, 100% 90%, 75% 100%, 0% 100%); }
 
-        .door.right {
-            transform-origin: right center;
-            border-right: 1px solid rgba(162, 219, 150, 0.4);
-            border-left: 1px solid rgba(162, 219, 150, 0.2); 
-            clip-path: polygon(0% 0%, 75% 0%, 100% 10%, 100% 90%, 75% 100%, 0% 100%);
-        }
-
-        /* --- CONTENUTI SULLA PORTA --- */
         .door-icon-wrapper {
             position: absolute;
             width: 260px; 
@@ -135,228 +130,151 @@
         .object-icon { font-size: 70px; filter: drop-shadow(0 0 10px rgba(162, 219, 150, 0.5)); }
 
         .door-name-plate {
-            position: absolute;
-            bottom: 25%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(18, 30, 27, 0.9);
-            border: 1px solid rgba(162, 219, 150, 0.5);
-            padding: 10px 25px;
-            border-radius: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-            z-index: 10; 
-            pointer-events: none; 
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            white-space: nowrap; 
+            position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%);
+            background: rgba(18, 30, 27, 0.9); border: 1px solid rgba(162, 219, 150, 0.5);
+            padding: 10px 25px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            z-index: 10; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; white-space: nowrap; 
         }
         
         .char-name { font-size: 20px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #a2db96; }
 
-        /* --- EFFETTO APERTURA PORTA --- */
         .door-scene.doors-open .door.left { transform: rotateY(-110deg); }
         .door-scene.doors-open .door.right { transform: rotateY(110deg); }
         .door-scene.doors-open .door-name-plate { opacity: 0; transform: translate(-50%, 20px) scale(0.8); }
 
         .magic-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: radial-gradient(circle at center, rgba(162, 219, 150, 0.2) 0%, rgba(9, 16, 14, 0.95) 80%);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 30;
-            transition: opacity 1s ease;
+            opacity: 0; pointer-events: none; z-index: 30; transition: opacity 1s ease;
         }
 
-        /* --- VISTA DELLA STORIA (PDF) --- */
+        /* --- VISTA DELLA STORIA (PDF RENDERIZZATO) --- */
         #story-view {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 40;
-            transition: opacity 1s ease; 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; z-index: 40; transition: opacity 1s ease; 
         }
 
         .story-content {
             background: rgba(18, 30, 27, 0.6);
-            backdrop-filter: blur(25px); 
-            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(162, 219, 150, 0.2);
-            padding: 30px;
-            border-radius: 15px;
-            /* Layout flessibile per massimizzare lo spazio del PDF */
+            padding: 40px; border-radius: 15px;
+            width: 85vw; max-width: 900px; height: 75vh; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
+        }
+
+        /* Contenitore dove verranno "stampate" le pagine del PDF */
+        #pdf-render-container {
+            flex-grow: 1;
+            overflow-y: auto; /* Permette di scorrere le 20 pagine! */
             display: flex;
             flex-direction: column;
-            width: 85vw; /* Più largo per accogliere bene un formato A4 */
-            max-width: 1000px;
-            height: 75vh; /* Più alto */
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.4);
+            align-items: center;
+            gap: 20px; /* Spazio tra una pagina e l'altra */
+            padding-right: 10px;
         }
 
-        /* Il riquadro che conterrà il PDF */
-        #iframe-container {
-            flex-grow: 1; /* Prende tutto lo spazio rimasto sotto il titolo */
-            width: 100%;
-            background-color: #fff; /* Sfondo bianco dietro al PDF per evitare glitch trasparenti */
-            border-radius: 8px;
-            overflow: hidden;
+        /* Lo stile per ogni singola pagina PDF generata */
+        .pdf-page-canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            background-color: white; /* Mantiene lo sfondo del PDF */
         }
 
-        .story-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        #pdf-render-container::-webkit-scrollbar { width: 8px; }
+        #pdf-render-container::-webkit-scrollbar-thumb { background: #a2db96; border-radius: 4px; }
+        #pdf-render-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+
+        /* Scritta di caricamento */
+        .loading-text {
+            color: #a2db96;
+            font-size: 18px;
+            font-style: italic;
+            text-align: center;
+            margin-top: 50px;
+            animation: pulse 1.5s infinite;
         }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
         .back-btn {
-            margin-top: 20px;
-            background: transparent;
-            color: #a2db96;
-            border: 1px solid #a2db96;
-            padding: 12px 30px;
-            font-family: inherit;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-top: 20px; background: transparent; color: #a2db96; border: 1px solid #a2db96;
+            padding: 12px 30px; font-family: inherit; font-size: 16px; cursor: pointer; border-radius: 5px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
         }
         .back-btn:hover { background: #a2db96; color: #09100e; }
     </style>
 </head>
 <body>
 
-    <!-- VISTA 1: L'HUB CENTRALE -->
     <div id="hub-view">
         <h2 class="magical-title">Archivi del San Mungo<br><span style="font-size: 22px; font-style: italic; font-weight: normal; color: #a2db96;">Reparto Ricordi</span></h2>
-        
         <button class="nav-btn" id="btn-prev" onclick="moveCarousel(-1)">❮</button>
         <button class="nav-btn" id="btn-next" onclick="moveCarousel(1)">❯</button>
-
-        <div class="carousel-stage" id="doors-container">
-            <!-- LE PORTE VERRANNO GENERATE AUTOMATICAMENTE -->
-        </div>
+        <div class="carousel-stage" id="doors-container"></div>
     </div>
 
-    <!-- OVERLAY DI LUCE -->
     <div class="magic-overlay" id="overlay"></div>
 
-    <!-- VISTA 2: IL RACCONTO (PDF iFrame) -->
     <div id="story-view">
         <div class="story-content">
-            <h2 id="current-story-title" class="magical-title" style="font-size: 30px; margin-bottom: 20px; margin-top: 0; color: #a2db96; flex-shrink: 0;">Titolo</h2>
+            <h2 id="current-story-title" class="magical-title" style="font-size: 30px; margin-bottom: 20px; margin-top: 0; color: #a2db96;">Titolo</h2>
             
-            <div id="iframe-container">
-                <!-- Qui dentro verrà caricato il PDF -->
-                <iframe id="pdf-viewer" class="story-iframe" src=""></iframe>
+            <div id="pdf-render-container">
+                <!-- Le pagine del PDF verranno disegnate qui dentro in automatico -->
             </div>
-
+            
         </div>
         <button class="back-btn" onclick="closeStory()">Torna alle storie</button>
     </div>
 
     <script>
-        // --- IL TUO DATABASE DEI RICORDI (Versione PDF) ---
-        // Al posto del testo lunghissimo, ora inserisci solo il NOME DEL FILE PDF
+        // BASTA INSERIRE IL NOME DEL PDF!
         const stories = [
-            { 
-                icon: "🎩", 
-                name: "I. Albus", 
-                title: "Il Fedora di Albus", 
-                pdfFile: "role_albus.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
-            },
-            { 
-                icon: "🎀", 
-                name: "II. Nina", 
-                title: "Il Fiocco di Nina", 
-                pdfFile: "nina.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
-            },
-            { 
-                icon: "🧠", 
-                name: "III. Henrich", 
-                title: "La Mente di Henrich", 
-                pdfFile: "henrich.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
-            },
-            { 
-                icon: "🛡️", 
-                name: "IV. Theodor", 
-                title: "Il Dovere di Theodor", 
-                pdfFile: "theodor.pdf" // <- Sostituisci con il nome esatto del tuo file PDF
-            }
+            { icon: "🎩", name: "I. Albus", title: "Il Fedora di Albus", pdfFile: "role_albus.pdf" },
+            { icon: "🎀", name: "II. Nina", title: "Il Fiocco di Nina", pdfFile: "nina.pdf" },
+            { icon: "🧠", name: "III. Henrich", title: "La Mente di Henrich", pdfFile: "henrich.pdf" },
+            { icon: "🛡️", name: "IV. Theodor", title: "Il Dovere di Theodor", pdfFile: "theodor.pdf" }
         ];
 
         let currentIndex = 0;
         let isAnimating = false; 
         const container = document.getElementById('doors-container');
+        const pdfContainer = document.getElementById('pdf-render-container');
 
-        // Generazione delle porte
+        // Costruisce le porte dell'HUB
         function buildDoors() {
             stories.forEach((story, index) => {
-                const doorHTML = `
+                container.innerHTML += `
                     <div class="door-scene" id="door-${index}">
                         <div class="card-door-container" onclick="openStory(${index})">
-                            <div class="door left">
-                                <div class="door-icon-wrapper">
-                                    <span class="object-icon">${story.icon}</span>
-                                </div>
-                            </div>
-                            <div class="door right">
-                                <div class="door-icon-wrapper">
-                                    <span class="object-icon">${story.icon}</span>
-                                </div>
-                            </div>
-                            <div class="door-name-plate">
-                                <span class="char-name">${story.name}</span>
-                            </div>
+                            <div class="door left"><div class="door-icon-wrapper"><span class="object-icon">${story.icon}</span></div></div>
+                            <div class="door right"><div class="door-icon-wrapper"><span class="object-icon">${story.icon}</span></div></div>
+                            <div class="door-name-plate"><span class="char-name">${story.name}</span></div>
                         </div>
-                    </div>
-                `;
-                container.innerHTML += doorHTML;
+                    </div>`;
             });
             updateCarouselPositions();
         }
 
-        // Calcolo posizioni Carosello
+        // Posiziona il carosello
         function updateCarouselPositions() {
             const doors = document.querySelectorAll('.door-scene');
-            
             doors.forEach((door, index) => {
                 let diff = index - currentIndex;
-                
                 if (diff < -1 && currentIndex === stories.length - 1 && index === 0) diff = 1;
                 if (diff > 1 && currentIndex === 0 && index === stories.length - 1) diff = -1;
 
                 if (diff === 0) {
-                    door.style.transform = 'translateX(0) scale(1)';
-                    door.style.opacity = '1';
-                    door.style.zIndex = '5';
-                    door.style.pointerEvents = 'auto'; 
-                    door.classList.add('active-door');
+                    door.style.transform = 'translateX(0) scale(1)'; door.style.opacity = '1'; door.style.zIndex = '5'; door.style.pointerEvents = 'auto'; door.classList.add('active-door');
                 } else if (diff === -1) {
-                    door.style.transform = 'translateX(-320px) scale(0.8)';
-                    door.style.opacity = '0.4';
-                    door.style.zIndex = '3';
-                    door.style.pointerEvents = 'none'; 
-                    door.classList.remove('active-door');
+                    door.style.transform = 'translateX(-320px) scale(0.8)'; door.style.opacity = '0.4'; door.style.zIndex = '3'; door.style.pointerEvents = 'none'; door.classList.remove('active-door');
                 } else if (diff === 1) {
-                    door.style.transform = 'translateX(320px) scale(0.8)';
-                    door.style.opacity = '0.4';
-                    door.style.zIndex = '3';
-                    door.style.pointerEvents = 'none'; 
-                    door.classList.remove('active-door');
+                    door.style.transform = 'translateX(320px) scale(0.8)'; door.style.opacity = '0.4'; door.style.zIndex = '3'; door.style.pointerEvents = 'none'; door.classList.remove('active-door');
                 } else {
-                    door.style.transform = `translateX(${diff > 0 ? '600px' : '-600px'}) scale(0.5)`;
-                    door.style.opacity = '0';
-                    door.style.zIndex = '1';
-                    door.style.pointerEvents = 'none';
-                    door.classList.remove('active-door');
+                    door.style.transform = `translateX(${diff > 0 ? '600px' : '-600px'}) scale(0.5)`; door.style.opacity = '0'; door.style.zIndex = '1'; door.style.pointerEvents = 'none'; door.classList.remove('active-door');
                 }
             });
         }
@@ -367,7 +285,43 @@
             updateCarouselPositions();
         }
 
-        // Apertura Porta e Caricamento PDF
+        // --- LA MAGIA: RENDERIZZA IL PDF PAGINA PER PAGINA ---
+        async function renderPDF(url) {
+            pdfContainer.innerHTML = '<div class="loading-text">Decifrando gli archivi magici...</div>';
+            
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                const pdf = await loadingTask.promise;
+                pdfContainer.innerHTML = ''; // Rimuove scritta caricamento
+                
+                // Cicla su tutte le pagine del PDF (che siano 2 o 20)
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    
+                    const scale = 1.5; // Scala di risoluzione (1.5 offre un'ottima lettura)
+                    const viewport = page.getViewport({ scale: scale });
+                    
+                    // Crea un tag canvas per stampare la pagina
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-page-canvas';
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    // Aggiunge la pagina al contenitore in vetro
+                    pdfContainer.appendChild(canvas);
+                    
+                    // Disegna i testi sul canvas
+                    const renderContext = { canvasContext: context, viewport: viewport };
+                    await page.render(renderContext).promise;
+                }
+            } catch (error) {
+                console.error("Errore PDF:", error);
+                pdfContainer.innerHTML = '<div class="loading-text" style="color: #ff6b6b;">Errore: Impossibile trovare o decifrare il referto (Controlla che il nome del file PDF sia corretto).</div>';
+            }
+        }
+
+        // Apre la porta e lancia la funzione PDF
         function openStory(index) {
             if (isAnimating) return;
             isAnimating = true;
@@ -377,24 +331,20 @@
 
             setTimeout(() => {
                 document.getElementById('overlay').style.opacity = '1';
-                
-                // Aggiorna il titolo
                 document.getElementById('current-story-title').innerHTML = stories[index].title;
                 
-                // CARICA IL PDF CORRETTO NELL'IFRAME
-                document.getElementById('pdf-viewer').src = stories[index].pdfFile;
+                // Lancia la renderizzazione del PDF
+                renderPDF(stories[index].pdfFile);
                 
                 const storyView = document.getElementById('story-view');
                 storyView.style.opacity = '1';
                 storyView.style.pointerEvents = 'auto';
-                
                 document.getElementById('hub-view').style.pointerEvents = 'none';
                 
                 isAnimating = false;
             }, 500); 
         }
 
-        // Chiusura Porta
         function closeStory() {
             if (isAnimating) return;
             isAnimating = true;
@@ -408,8 +358,8 @@
                 const activeDoor = document.getElementById(`door-${currentIndex}`);
                 activeDoor.classList.remove('doors-open');
                 
-                // Svuota l'iframe per evitare problemi di memoria
-                document.getElementById('pdf-viewer').src = "";
+                // Pulisce il contenitore per alleggerire la memoria
+                pdfContainer.innerHTML = '';
 
                 document.getElementById('hub-view').style.pointerEvents = 'auto';
                 isAnimating = false;
