@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>St. Mungo Chronicles</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <title>HUB dei Ricordi - Effetto Vetro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #04255c;
-            color: #6993d6;
+            /* Sfondo scuro che esalti l'effetto vetro */
+            background: radial-gradient(circle at center, #2a241f 0%, #14110f 100%);
+            color: #d4c4a8;
             font-family: 'Playfair Display', serif;
             margin: 0;
             min-height: 100vh;
-            padding: 50px 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,217 +22,194 @@
         .view-container {
             position: absolute;
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
             display: flex;
             flex-direction: column;
             align-items: center;
             transition: opacity 0.8s ease, transform 0.8s ease;
         }
 
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.95);
+        .hidden { opacity: 0; pointer-events: none; transform: scale(0.95); z-index: -1; }
+        .active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
+
+        /* --- TITOLO MAGICO --- */
+        .magical-title {
+            font-family: 'Cinzel', serif;
+            font-size: 38px;
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: 4px;
+            color: transparent;
+            animation: lumosReveal 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
-        .active {
-            opacity: 1;
-            pointer-events: auto;
-            transform: scale(1);
-            z-index: 10;
+        @keyframes lumosReveal {
+            0% { opacity: 0; filter: blur(15px); transform: translateY(-20px); text-shadow: 0 0 0 rgba(212, 196, 168, 0); }
+            50% { color: transparent; text-shadow: 0 0 25px rgba(212, 196, 168, 1); }
+            100% { opacity: 1; filter: blur(0); transform: translateY(0); color: #d4c4a8; text-shadow: 0 0 10px rgba(212, 196, 168, 0.4); }
         }
 
-        /* --- MENU HUB VERTICALE --- */
-        .hub-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .memory-btn {
-            background: linear-gradient(145deg, #2a241f, #1a1613);
-            border: 1px solid #6993d6;
-            border-radius: 50px;
-            padding: 15px 25px;
+        /* --- CAROSELLO ORIZZONTALE --- */
+        .carousel-wrapper {
             display: flex;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            opacity: 0; /* Partono invisibili */
-            animation: emergeMemory 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
-        /* Facciamo apparire i bottoni a "cascata", uno dopo l'altro */
-        .memory-btn:nth-child(1) { animation-delay: 1.0s; }
-        .memory-btn:nth-child(2) { animation-delay: 1.4s; }
-        .memory-btn:nth-child(3) { animation-delay: 1.8s; }
-        .memory-btn:nth-child(4) { animation-delay: 2.2s; } /* Se ne aggiungi un quarto */
-
-        @keyframes emergeMemory {
-            0% {
-                opacity: 0;
-                transform: translateY(40px) scale(0.9);
-                filter: blur(8px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: blur(0);
-            }
-        }
-
-        .memory-btn:hover {
-            transform: scale(1.15) translateX(10px);
-            box-shadow: 0 10px 25px rgba(212, 196, 168, 0.15);
-            border-color: #6993d6;
-            z-index: 5;
-        }
-
-        /* L'oggetto (Icona o Emoji) */
-        .object-icon {
-            font-size: 40px;
-            margin-right: 0;
-            transition: margin 0.4s ease;
-        }
-
-        /* Il nome del personaggio (Nascosto di default) */
-        .char-name {
-            font-size: 22px;
-            color: #d4c4a8;
-            max-width: 0;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
             opacity: 0;
-            overflow: hidden;
-            white-space: nowrap;
-            transition: max-width 0.5s ease, opacity 0.4s ease, margin 0.4s ease;
+            animation: fadeIn 1.5s ease 1.5s forwards; /* Appare dopo il titolo */
         }
 
-        .memory-btn:hover .object-icon { margin-right: 20px; }
-        .memory-btn:hover .char-name { max-width: 300px; opacity: 1; }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .carousel-container {
+            display: flex;
+            gap: 30px;
+            max-width: 800px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 20px 10px;
+            /* Nasconde la barra di scorrimento brutta su PC */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .carousel-container::-webkit-scrollbar { display: none; }
+
+        /* Frecce di scorrimento */
+        .nav-btn {
+            background: rgba(212, 196, 168, 0.1);
+            color: #d4c4a8;
+            border: 1px solid rgba(212, 196, 168, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-btn:hover { background: rgba(212, 196, 168, 0.3); transform: scale(1.1); }
+
+        /* --- BOTTONI MEMORIA (VETRO E OTTAGONO) --- */
+        .memory-card {
+            flex: 0 0 auto; /* Impedisce ai bottoni di restringersi */
+            width: 280px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            cursor: pointer;
+            position: relative;
+            
+            /* Effetto Vetro (Glassmorphism) */
+            background: rgba(212, 196, 168, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); /* Per Safari */
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            
+            /* Forma a Ottagono Irregolare */
+            clip-path: polygon(15% 0%, 85% 0%, 100% 25%, 100% 75%, 85% 100%, 15% 100%, 0% 75%, 0% 25%);
+            
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .memory-card:hover {
+            background: rgba(212, 196, 168, 0.15);
+            transform: scale(1.08) translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .object-icon { font-size: 35px; }
+        .char-name { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
 
         /* --- STILE DEI RACCONTI --- */
         .story-content {
-            background: rgba(30, 25, 22, 0.8);
-            border: 1px solid #4a3b2c;
-            padding: 40px;
+            background: rgba(30, 25, 22, 0.7);
+            backdrop-filter: blur(15px); /* Anche la box del racconto ora è in vetro! */
+            border: 1px solid rgba(212, 196, 168, 0.2);
+            padding: 50px;
             border-radius: 15px;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
             text-align: justify;
             line-height: 1.8;
-            height: auto:
+            height: auto;
+            max-width: 800px;
         }
 
         .back-btn {
             margin-top: 30px;
             background: transparent;
-            color: #6993d6;
-            border: 1px solid #6993d6;
-            padding: 10px 20px;
+            color: #d4c4a8;
+            border: 1px solid #d4c4a8;
+            padding: 12px 25px;
             font-family: inherit;
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
             transition: 0.3s;
         }
-        .back-btn:hover { background: #04255c; color: #6993d6; }
-
-        /* --- EFFETTO MAGICO TITOLO --- */
-        .magical-title {
-            font-family: 'Cinzel', serif; /* Usiamo Cinzel per dare un tocco più epico/antico */
-            font-size: 38px;
-            text-align: center;
-            margin-bottom: 50px;
-            letter-spacing: 4px;
-            color: transparent;
-            /* L'animazione dura 2.5 secondi */
-            animation: lumosReveal 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
-
-        @keyframes lumosReveal {
-            0% {
-                opacity: 0;
-                filter: blur(15px);
-                transform: translateY(-20px);
-                text-shadow: 0 0 0 rgba(212, 196, 168, 0);
-            }
-            50% {
-                color: transparent;
-                text-shadow: 0 0 25px rgba(212, 196, 168, 1); /* Bagliore intenso */
-            }
-            100% {
-                opacity: 1;
-                filter: blur(0);
-                transform: translateY(0);
-                color: #d4c4a8;
-                text-shadow: 0 0 10px rgba(212, 196, 168, 0.4); /* Bagliore residuo */
-            }
-        }
-
-
+        .back-btn:hover { background: #d4c4a8; color: #14110f; }
+        h2 { color: #fff; text-align: center; margin-top: 0; }
     </style>
 </head>
 <body>
 
     <!-- VISTA 1: L'HUB CENTRALE -->
     <div id="hub-view" class="view-container active">
-        <h2 class="magical-title">Cronache del San Mungo</h2>
+        <h2 class="magical-title">I Frammenti del Passato</h2>
         
-        <div class="hub-menu">
-            <!-- Pulsante 1 -->
-            <div class="memory-btn" onclick="openStory('story-1')">
-                <span class="object-icon">📜</span>
-                <span class="char-name">I - Albus</span>
-            </div>
+        <div class="carousel-wrapper">
+            <!-- Freccia Sinistra -->
+            <button class="nav-btn prev-btn" onclick="scrollCarousel(-1)">&#10094;</button>
+            
+            <div class="carousel-container" id="memory-carousel">
+                <div class="memory-card" onclick="openStory('story-1')">
+                    <span class="object-icon">🗝️</span>
+                    <span class="char-name">Alaric</span>
+                </div>
 
-            <!-- Pulsante 2 -->
-            <div class="memory-btn" onclick="openStory('story-2')">
-                <span class="object-icon">🎀</span>
-                <span class="char-name">II - Nina</span>
-            </div>
+                <div class="memory-card" onclick="openStory('story-2')">
+                    <span class="object-icon">📜</span>
+                    <span class="char-name">Elara</span>
+                </div>
 
-            <!-- Pulsante 3 -->
-            <div class="memory-btn" onclick="openStory('story-3')">
-                <span class="object-icon">🦅</span>
-                <span class="char-name">III - Camus</span>
-            </div>
+                <div class="memory-card" onclick="openStory('story-3')">
+                    <span class="object-icon">🦅</span>
+                    <span class="char-name">Silas</span>
+                </div>
 
-            <div class="memory-btn" onclick="openStory('story-4')">
-                <span class="object-icon">🛡️</span>
-                <span class="char-name">IV - Theodor</span>
+                <div class="memory-card" onclick="openStory('story-4')">
+                    <span class="object-icon">🛡️</span>
+                    <span class="char-name">Theodor</span>
+                </div>
             </div>
+            
+            <!-- Freccia Destra -->
+            <button class="nav-btn next-btn" onclick="scrollCarousel(1)">&#10095;</button>
         </div>
     </div>
 
     <!-- VISTA 2: I RACCONTI -->
     <div id="story-view" class="view-container hidden">
         <div class="story-content">
-            <h2 id="current-story-title">Titolo</h2>
+            <h2 id="current-story-title" class="magical-title" style="font-size: 30px; margin-bottom: 30px;">Titolo</h2>
             <div id="current-story-text">
-                <!-- Il testo verrà iniettato qui da JavaScript -->
+                <!-- Il testo verrà iniettato qui -->
             </div>
         </div>
-        <button class="back-btn" onclick="closeStory()">Torna all'HUB</button>
+        <button class="back-btn" onclick="closeStory()">Torna ai Ricordi</button>
     </div>
 
     <script>
-        // Il nostro database dei ricordi
         const stories = {
-            'story-1': {
-                title: "I - Albus",
-                text: "<p>Role Albus</p>"
-            },
-            'story-2': {
-                title: "II - Nina",
-                text: "<p>Role Nina</p>"
-            },
-            'story-3': {
-                title: "III - Camus",
-                text: "<p>Role Camus</p>"
-            },
-            'story-4': {
-                title: "IV - Theodor",
-                text: "<p>Role Theodor</p>",
-            }
+            'story-1': { title: "La Chiave di Alaric", text: "<p>Testo giocata 1...</p>" },
+            'story-2': { title: "La Pergamena di Elara", text: "<p>Testo giocata 2...</p>" },
+            'story-3': { title: "Il Patto di Silas", text: "<p>Testo giocata 3...</p>" },
+            'story-4': { title: "Il Dovere di Theodor", text: "<p>Lo scudo di Theodor era pesante, non solo per il metallo...</p>" }
         };
 
         const hubView = document.getElementById('hub-view');
@@ -240,23 +217,26 @@
         const storyTitle = document.getElementById('current-story-title');
         const storyText = document.getElementById('current-story-text');
 
-        // Funzione per aprire il racconto
+        // Funzione per scorrere i bottoni
+        function scrollCarousel(direction) {
+            const container = document.getElementById('memory-carousel');
+            const scrollAmount = 310; // Larghezza del bottone (280) + spazio vuoto (30)
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+
         function openStory(storyId) {
-            // Carica i testi giusti
             storyTitle.innerHTML = stories[storyId].title;
             storyText.innerHTML = stories[storyId].text;
 
-            // Animazione di scambio
             hubView.classList.remove('active');
             hubView.classList.add('hidden');
             
             setTimeout(() => {
                 storyView.classList.remove('hidden');
                 storyView.classList.add('active');
-            }, 400); // Attende 400ms che l'hub svanisca prima di mostrare il racconto
+            }, 500);
         }
 
-        // Funzione per tornare all'HUB
         function closeStory() {
             storyView.classList.remove('active');
             storyView.classList.add('hidden');
@@ -264,7 +244,7 @@
             setTimeout(() => {
                 hubView.classList.remove('hidden');
                 hubView.classList.add('active');
-            }, 400);
+            }, 500);
         }
     </script>
 </body>
