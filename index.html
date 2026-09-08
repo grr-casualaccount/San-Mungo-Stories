@@ -3,26 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUB dei Ricordi - Effetto Vetro</title>
+    <title>Archivi del San Mungo - Reparto Ricordi</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
+        /* --- PALETTE SAN MUNGO --- */
         body {
-            /* Sfondo scuro che esalti l'effetto vetro */
-            background: radial-gradient(circle at center, #2a241f 0%, #14110f 100%);
-            color: #d4c4a8;
+            /* Sfondo asettico magico: verde petrolio molto scuro verso il nero */
+            background: radial-gradient(circle at center, #1b2a26 0%, #09100e 100%);
+            color: #e0f2eb; /* Bianco menta per il testo */
             font-family: 'Playfair Display', serif;
             margin: 0;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 40px 0;
         }
 
-        /* --- CONTENITORI DELLE VISTE --- */
         .view-container {
             position: absolute;
             width: 100%;
-            max-width: 1000px;
+            max-width: 800px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -32,197 +33,171 @@
         .hidden { opacity: 0; pointer-events: none; transform: scale(0.95); z-index: -1; }
         .active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
 
-        /* --- TITOLO MAGICO --- */
+        /* --- TITOLO EFFETTO POZIONE CURATIVA --- */
         .magical-title {
             font-family: 'Cinzel', serif;
-            font-size: 38px;
+            font-size: 35px;
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 50px;
             letter-spacing: 4px;
             color: transparent;
-            animation: lumosReveal 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            animation: healingReveal 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
-        @keyframes lumosReveal {
-            0% { opacity: 0; filter: blur(15px); transform: translateY(-20px); text-shadow: 0 0 0 rgba(212, 196, 168, 0); }
-            50% { color: transparent; text-shadow: 0 0 25px rgba(212, 196, 168, 1); }
-            100% { opacity: 1; filter: blur(0); transform: translateY(0); color: #d4c4a8; text-shadow: 0 0 10px rgba(212, 196, 168, 0.4); }
+        @keyframes healingReveal {
+            0% { opacity: 0; filter: blur(15px); transform: translateY(-20px); text-shadow: 0 0 0 rgba(162, 219, 150, 0); }
+            50% { color: transparent; text-shadow: 0 0 25px rgba(162, 219, 150, 1); } /* Bagliore verde lime/curativo */
+            100% { opacity: 1; filter: blur(0); transform: translateY(0); color: #e0f2eb; text-shadow: 0 0 12px rgba(162, 219, 150, 0.4); }
         }
 
-        /* --- CAROSELLO ORIZZONTALE --- */
-        .carousel-wrapper {
+        /* --- MENU VERTICALE SAN MUNGO --- */
+        .hub-menu {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
+            flex-direction: column;
+            gap: 25px;
             width: 100%;
-            opacity: 0;
-            animation: fadeIn 1.5s ease 1.5s forwards; /* Appare dopo il titolo */
+            max-width: 450px; /* Larghezza controllata per l'impaginazione verticale */
         }
 
-        @keyframes fadeIn { to { opacity: 1; } }
-
-        .carousel-container {
-            display: flex;
-            gap: 30px;
-            max-width: 800px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding: 20px 10px;
-            /* Nasconde la barra di scorrimento brutta su PC */
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .carousel-container::-webkit-scrollbar { display: none; }
-
-        /* Frecce di scorrimento */
-        .nav-btn {
-            background: rgba(212, 196, 168, 0.1);
-            color: #d4c4a8;
-            border: 1px solid rgba(212, 196, 168, 0.3);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .nav-btn:hover { background: rgba(212, 196, 168, 0.3); transform: scale(1.1); }
-
-        /* --- BOTTONI MEMORIA (VETRO E OTTAGONO) --- */
+        /* --- TARGHE IN VETRO OTTAGONALI --- */
         .memory-card {
-            flex: 0 0 auto; /* Impedisce ai bottoni di restringersi */
-            width: 280px;
-            height: 120px;
+            width: 100%;
+            height: 90px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 15px;
+            justify-content: flex-start;
+            padding-left: 30px;
             cursor: pointer;
-            position: relative;
             
-            /* Effetto Vetro (Glassmorphism) */
-            background: rgba(212, 196, 168, 0.05);
+            /* Effetto Vetro a tema ospedale magico */
+            background: rgba(162, 219, 150, 0.05); /* Verde lime trasparentissimo */
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px); /* Per Safari */
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(162, 219, 150, 0.3);
+            border-bottom: 1px solid rgba(162, 219, 150, 0.1);
             
-            /* Forma a Ottagono Irregolare */
-            clip-path: polygon(15% 0%, 85% 0%, 100% 25%, 100% 75%, 85% 100%, 15% 100%, 0% 75%, 0% 25%);
+            /* Forma a Ottagono Allungato */
+            clip-path: polygon(5% 0%, 95% 0%, 100% 25%, 100% 75%, 95% 100%, 5% 100%, 0% 75%, 0% 25%);
             
+            /* Animazione d'ingresso a cascata */
+            opacity: 0;
+            animation: emergeMemory 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .memory-card:hover {
-            background: rgba(212, 196, 168, 0.15);
-            transform: scale(1.08) translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+        .memory-card:nth-child(1) { animation-delay: 1.0s; }
+        .memory-card:nth-child(2) { animation-delay: 1.3s; }
+        .memory-card:nth-child(3) { animation-delay: 1.6s; }
+        .memory-card:nth-child(4) { animation-delay: 1.9s; }
+
+        @keyframes emergeMemory {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); filter: blur(5px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        .object-icon { font-size: 35px; }
-        .char-name { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+        .memory-card:hover {
+            background: rgba(162, 219, 150, 0.15);
+            transform: scale(1.05) translateX(10px); /* Si allarga e si sposta un po' a destra */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border-left: 3px solid #a2db96; /* Dettaglio verde luminoso al passaggio */
+        }
 
-        /* --- STILE DEI RACCONTI --- */
+        .object-icon { 
+            font-size: 32px; 
+            margin-right: 25px;
+            filter: drop-shadow(0 0 5px rgba(162, 219, 150, 0.5)); /* Leggero alone curativo sull'icona */
+        }
+        
+        .char-name { 
+            font-size: 20px; 
+            font-weight: normal;
+            letter-spacing: 1px; 
+        }
+
+        /* --- STILE DEI RACCONTI / CARTELLE CLINICHE --- */
         .story-content {
-            background: rgba(30, 25, 22, 0.7);
-            backdrop-filter: blur(15px); /* Anche la box del racconto ora è in vetro! */
-            border: 1px solid rgba(212, 196, 168, 0.2);
+            background: rgba(18, 30, 27, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(162, 219, 150, 0.2);
             padding: 50px;
             border-radius: 15px;
             text-align: justify;
             line-height: 1.8;
             height: auto;
             max-width: 800px;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
 
         .back-btn {
             margin-top: 30px;
             background: transparent;
-            color: #d4c4a8;
-            border: 1px solid #d4c4a8;
-            padding: 12px 25px;
+            color: #a2db96; /* Verde lime */
+            border: 1px solid #a2db96;
+            padding: 10px 25px;
             font-family: inherit;
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
             transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .back-btn:hover { background: #d4c4a8; color: #14110f; }
-        h2 { color: #fff; text-align: center; margin-top: 0; }
+        
+        .back-btn:hover { background: #a2db96; color: #09100e; }
     </style>
 </head>
 <body>
 
     <!-- VISTA 1: L'HUB CENTRALE -->
     <div id="hub-view" class="view-container active">
-        <h2 class="magical-title">I Frammenti del Passato</h2>
+        <h2 class="magical-title">Archivi del San Mungo<br><span style="font-size: 22px; font-style: italic; font-weight: normal; color: #a2db96;">Reparto Ricordi e Terapie</span></h2>
         
-        <div class="carousel-wrapper">
-            <!-- Freccia Sinistra -->
-            <button class="nav-btn prev-btn" onclick="scrollCarousel(-1)">&#10094;</button>
-            
-            <div class="carousel-container" id="memory-carousel">
-                <div class="memory-card" onclick="openStory('story-1')">
-                    <span class="object-icon">🗝️</span>
-                    <span class="char-name">Alaric</span>
-                </div>
-
-                <div class="memory-card" onclick="openStory('story-2')">
-                    <span class="object-icon">📜</span>
-                    <span class="char-name">Elara</span>
-                </div>
-
-                <div class="memory-card" onclick="openStory('story-3')">
-                    <span class="object-icon">🦅</span>
-                    <span class="char-name">Silas</span>
-                </div>
-
-                <div class="memory-card" onclick="openStory('story-4')">
-                    <span class="object-icon">🛡️</span>
-                    <span class="char-name">Theodor</span>
-                </div>
+        <div class="hub-menu">
+            <div class="memory-card" onclick="openStory('story-1')">
+                <span class="object-icon">🧪</span>
+                <span class="char-name">Pozione di Alaric</span>
             </div>
-            
-            <!-- Freccia Destra -->
-            <button class="nav-btn next-btn" onclick="scrollCarousel(1)">&#10095;</button>
+
+            <div class="memory-card" onclick="openStory('story-2')">
+                <span class="object-icon">⚕️</span>
+                <span class="char-name">Referto di Elara</span>
+            </div>
+
+            <div class="memory-card" onclick="openStory('story-3')">
+                <span class="object-icon">🩺</span>
+                <span class="char-name">Consulto con Silas</span>
+            </div>
+
+            <div class="memory-card" onclick="openStory('story-4')">
+                <span class="object-icon">🛏️</span>
+                <span class="char-name">Letto 4 - Theodor</span>
+            </div>
         </div>
     </div>
 
     <!-- VISTA 2: I RACCONTI -->
     <div id="story-view" class="view-container hidden">
         <div class="story-content">
-            <h2 id="current-story-title" class="magical-title" style="font-size: 30px; margin-bottom: 30px;">Titolo</h2>
+            <h2 id="current-story-title" class="magical-title" style="font-size: 28px; margin-bottom: 25px; color: #a2db96;">Titolo</h2>
             <div id="current-story-text">
                 <!-- Il testo verrà iniettato qui -->
             </div>
         </div>
-        <button class="back-btn" onclick="closeStory()">Torna ai Ricordi</button>
+        <button class="back-btn" onclick="closeStory()">Chiudi Referto</button>
     </div>
 
     <script>
         const stories = {
-            'story-1': { title: "La Chiave di Alaric", text: "<p>Testo giocata 1...</p>" },
-            'story-2': { title: "La Pergamena di Elara", text: "<p>Testo giocata 2...</p>" },
-            'story-3': { title: "Il Patto di Silas", text: "<p>Testo giocata 3...</p>" },
-            'story-4': { title: "Il Dovere di Theodor", text: "<p>Lo scudo di Theodor era pesante, non solo per il metallo...</p>" }
+            'story-1': { title: "La Pozione di Alaric", text: "<p>L'odore asettico del reparto si mescolava a quello pungente della radice di asfodelo...</p>" },
+            'story-2': { title: "Il Referto di Elara", text: "<p>La Guaritrice Elara picchiettò la bacchetta sulla cartella clinica, che si auto-compilò all'istante...</p>" },
+            'story-3': { title: "Consulto con Silas", text: "<p>Silas camminava avanti e indietro lungo il corridoio verde lime, visibilmente agitato...</p>" },
+            'story-4': { title: "La Veglia di Theodor", text: "<p>Le luci magiche erano abbassate nel Reparto Lesioni da Incantesimo. Theodor riposava...</p>" }
         };
 
         const hubView = document.getElementById('hub-view');
         const storyView = document.getElementById('story-view');
         const storyTitle = document.getElementById('current-story-title');
         const storyText = document.getElementById('current-story-text');
-
-        // Funzione per scorrere i bottoni
-        function scrollCarousel(direction) {
-            const container = document.getElementById('memory-carousel');
-            const scrollAmount = 310; // Larghezza del bottone (280) + spazio vuoto (30)
-            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-        }
 
         function openStory(storyId) {
             storyTitle.innerHTML = stories[storyId].title;
